@@ -1,0 +1,53 @@
+﻿@page "/gestion"
+
+@using System.IO; 
+
+<h3>Gestion des modèles</h3>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Nom Fichier</th>
+            <th></th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var fichier in listeFichier)
+        {
+            <tr>
+                <td>@fichier</td>
+                <td><button @onclick="e=>OnModification(fichier)" class="btn btn-info">Modification</button></td>
+                <td><button @onclick="e => OnDelete(fichier)" class="btn btn-danger">Suppression</button></td>
+            </tr>
+        }
+
+    </tbody>
+</table>
+
+@code {
+    private List<string> listeFichier;
+
+    protected override Task OnInitializedAsync()
+    {
+        listeFichier = new List<string>();
+        foreach (var file in Directory.GetFiles("model/"))
+        {
+            listeFichier.Add(file);
+        }
+        return base.OnInitializedAsync();
+
+    }
+
+    private void OnDelete(string nomFichier)
+    {
+        File.Delete(nomFichier);
+        listeFichier.Remove(nomFichier);
+    }
+
+    private void OnModification(string nomFichier)
+        {
+            //navigation avec nomFichier en parametre vers la page creation
+        }
+
+}
