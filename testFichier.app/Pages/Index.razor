@@ -1,0 +1,106 @@
+﻿@page "/"
+
+@using testFichier.Model
+@using System.Text.Json
+@using System.IO
+
+@inject IModelService ModelService; 
+
+<h1>Création d'un model</h1>
+
+
+<div class="form-group row">
+    <div class="col-xs-2">
+        <div>
+           
+            <button type="button" class="btn btn-primary" @onclick="SauvegarderModel">Sauvegarder</button>
+        </div>
+
+        <EditForm Model="monChamp" OnValidSubmit="@OnSubmit">
+            <label class="form-label">Nom du model</label>
+            <InputText type="text" @bind-Value="@champs.NomModel" class="form-control" />
+            <label class="form-label">Nom</label>
+            <InputText @bind-Value="monChamp.Nom" class="form-control"></InputText>
+            <label class="form-label">Colonne de début</label>
+            <InputNumber @bind-Value="monChamp.ColDebut" class="form-control"></InputNumber>
+            <label class="form-label">Colonne de début</label>
+            <InputNumber @bind-Value="monChamp.ColFin" class="form-control"></InputNumber>
+            <button type="submit" class="btn btn-primary">Ajouter</button>
+        </EditForm>
+    </div>
+</div>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Nom</th>
+            <th>Colonne de debut</th>
+            <th>Colonne de fin</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var champ in champs.ListeChamps)
+        {
+            <tr>
+                <td>@champ.Nom</td>
+                <td>@champ.ColDebut</td>
+                <td>@champ.ColFin.</td>
+                <td><button @onclick="(e => OnModification(champ.Id))" class="btn btn-primary">Modification</button></td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code
+{
+   
+    private Champ monChamp;
+    private LeModel champs;
+    private bool EnModif = false;
+    private Champ oldChamp;
+
+    protected override Task OnInitializedAsync()
+    {
+
+
+
+        monChamp = new Champ();
+        champs = new LeModel();
+        return base.OnInitializedAsync();
+
+    }
+
+    private void OnSubmit()
+    {
+        if (!EnModif)
+        {
+            ModelService.AddChamp(monChamp);
+        }
+        else
+        {
+
+            ModelService.Update(monChamp);
+            EnModif = false;
+        }
+        monChamp = new Champ();
+        champs = ModelService.GetModel();
+    }
+
+    private void OnModification(Guid id)
+    {
+        
+        monChamp = ModelService.GetChamp(id);
+        EnModif = true;
+    }
+
+    private void SauvegarderModel()
+    {
+        if (!Directory.Exists(Constante.REPERTOIREMODEL))
+            Directory.CreateDirectory(Constante.REPERTOIREMODEL);
+
+        string fileName = Constante.REPERTOIREMODEL + "/"+champs.NomModel + ".json";
+        string jsonString = JsonSerializer.Serialize(champs);
+        File.WriteAllText(fileName, jsonString);
+    }
+
+}
