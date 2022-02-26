@@ -14,6 +14,16 @@ namespace testFichier.Business
             leModel.ListeChamps.Add(champ);
         }
 
+        public void ChangeNomModel(string nom)
+        {
+            leModel.NomModel = nom;
+        }
+
+        public void CreateModel(LeModel leModel)
+        {
+            this.leModel = leModel;
+        }
+
         public Champ GetChamp(Guid id)
         {
             return leModel.ListeChamps.SingleOrDefault(x => x.Id == id);
