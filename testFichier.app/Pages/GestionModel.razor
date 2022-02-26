@@ -1,5 +1,6 @@
 ﻿@page "/gestion"
 
+@inject NavigationManager navigationManager 
 @using System.IO; 
 
 <h3>Gestion des modèles</h3>
@@ -31,7 +32,7 @@
     protected override Task OnInitializedAsync()
     {
         listeFichier = new List<string>();
-        foreach (var file in Directory.GetFiles("model/"))
+        foreach (var file in Directory.GetFiles(Constantes.REPERTOIRE))
         {
             listeFichier.Add(file);
         }
@@ -46,8 +47,12 @@
     }
 
     private void OnModification(string nomFichier)
-        {
-            //navigation avec nomFichier en parametre vers la page creation
-        }
+    {
+
+        var nomModel = nomFichier.Split('/')[1].Split('.')[0];
+
+        //navigation avec nomFichier en parametre vers la page creation
+        navigationManager.NavigateTo($"/{nomModel}");
+    }
 
 }

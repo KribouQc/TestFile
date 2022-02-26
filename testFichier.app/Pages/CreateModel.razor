@@ -1,4 +1,6 @@
 ﻿@page "/"
+@page "/{nomModel}"
+
 
 @using testFichier.Model
 @using System.Text.Json
@@ -16,15 +18,25 @@
             <button type="button" class="btn btn-primary" @onclick="SauvegarderModel">Sauvegarder</button>
         </div>
 
-        <EditForm Model="monChamp" OnValidSubmit="@OnSubmit">
+        <EditForm Model="vmCreation" OnValidSubmit="@OnSubmit" >
             <label class="form-label">Nom du model</label>
-            <InputText type="text" @bind-Value="@champs.NomModel" class="form-control" />
+            <InputText type="text" @bind-Value="@vmCreation.Model.NomModel" class="form-control" />
             <label class="form-label">Nom</label>
-            <InputText @bind-Value="monChamp.Nom" class="form-control"></InputText>
+            <InputText @bind-Value="vmCreation.leChamp.Nom" class="form-control"></InputText>
             <label class="form-label">Colonne de début</label>
-            <InputNumber @bind-Value="monChamp.ColDebut" class="form-control"></InputNumber>
+            <InputNumber @bind-Value="vmCreation.leChamp.ColDebut" class="form-control"></InputNumber>
             <label class="form-label">Colonne de début</label>
-            <InputNumber @bind-Value="monChamp.ColFin" class="form-control"></InputNumber>
+            <InputNumber @bind-Value="vmCreation.leChamp.ColFin" class="form-control"></InputNumber>
+            <label class="form-label">Format champ</label>
+            <InputSelect @bind-Value="@vmCreation.leChamp.FormatChamp" class="form-control">
+                <option>Choisir un format</option>
+                @foreach (var item in vmCreation.ListFormat)
+                {
+                    <option>@item</option>
+                }
+            </InputSelect>
+            <br />
+
             <button type="submit" class="btn btn-primary">Ajouter</button>
         </EditForm>
     </div>
@@ -35,72 +47,97 @@
             <th>Nom</th>
             <th>Colonne de debut</th>
             <th>Colonne de fin</th>
+            <th>Format champ</th>
+            <th></th>
             <th></th>
         </tr>
     </thead>
     <tbody>
-        @foreach (var champ in champs.ListeChamps)
+        @foreach (var champ in vmCreation.Model.ListeChamps.OrderBy(c => c.ColDebut))
         {
-            <tr>
-                <td>@champ.Nom</td>
-                <td>@champ.ColDebut</td>
-                <td>@champ.ColFin.</td>
-                <td><button @onclick="(e => OnModification(champ.Id))" class="btn btn-primary">Modification</button></td>
-            </tr>
+        <tr>
+            <td>@champ.Nom</td>
+            <td>@champ.ColDebut</td>
+            <td>@champ.ColFin</td>
+            <td>@champ.FormatChamp</td>
+            <td><button @onclick="(e => OnModification(champ.Id))" class="btn btn-primary">Modification</button></td>
+            <td><button @onclick="(e => OnSuppression(champ.Id))" class="btn btn-warning">Suppression</button></td>
+        </tr>
         }
     </tbody>
 </table>
 
 @code
 {
-   
-    private Champ monChamp;
-    private LeModel champs;
+
+    [Parameter]
+    public string nomModel { get; set; }
+
+    private VMCreation vmCreation = new VMCreation();
     private bool EnModif = false;
     private Champ oldChamp;
 
     protected override Task OnInitializedAsync()
     {
 
+        vmCreation.Model = new LeModel();
+        if (!string.IsNullOrEmpty(nomModel))
+        {
+            //ouverture du fichier dans pour remplir le tableau
+            //var nomModel = "model/nomModel
+            var fileModel = File.ReadAllText(Constantes.REPERTOIRE + nomModel + ".json");
+            vmCreation.Model = JsonSerializer.Deserialize<LeModel>(fileModel);
 
 
-        monChamp = new Champ();
-        champs = new LeModel();
+        }
+        ModelService.CreateModel(vmCreation.Model);
+        vmCreation.leChamp = new Champ();
         return base.OnInitializedAsync();
-
     }
 
     private void OnSubmit()
     {
+        if (ModelService.GetModel() == null)
+            ModelService.CreateModel(vmCreation.Model);
+
+
+
         if (!EnModif)
         {
-            ModelService.AddChamp(monChamp);
+            ModelService.AddChamp(vmCreation.leChamp);
+            if (!string.IsNullOrEmpty(vmCreation.Model.NomModel))
+                SauvegarderModel();
         }
         else
         {
 
-            ModelService.Update(monChamp);
+            ModelService.Update(vmCreation.leChamp);
             EnModif = false;
         }
-        monChamp = new Champ();
-        champs = ModelService.GetModel();
+        vmCreation.leChamp = new Champ();
+
+        vmCreation.Model = ModelService.GetModel();
     }
 
     private void OnModification(Guid id)
     {
-        
-        monChamp = ModelService.GetChamp(id);
+
+        vmCreation.leChamp = ModelService.GetChamp(id);
         EnModif = true;
     }
 
     private void SauvegarderModel()
     {
-        if (!Directory.Exists(Constante.REPERTOIREMODEL))
-            Directory.CreateDirectory(Constante.REPERTOIREMODEL);
+        if (!Directory.Exists(Constantes.REPERTOIRE))
+            Directory.CreateDirectory(Constantes.REPERTOIRE);
 
-        string fileName = Constante.REPERTOIREMODEL + "/"+champs.NomModel + ".json";
-        string jsonString = JsonSerializer.Serialize(champs);
+        string fileName = Constantes.REPERTOIRE+vmCreation.Model.NomModel + ".json";
+        string jsonString = JsonSerializer.Serialize(vmCreation.Model);
         File.WriteAllText(fileName, jsonString);
     }
 
+    private void OnSuppression(Guid id)
+        {
+
+        }
 }
