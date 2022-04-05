@@ -1,0 +1,35 @@
+﻿@page "/"
+
+@using System.IO
+
+
+<h3>Gestion du fichier</h3>
+
+
+
+<label for="filePicker" class="label">
+    <i class="fas fa-paperclip"></i>
+    <InputFile id="filePicker" OnChange="ViewFile" />
+</label>
+
+    @if (fileName != null)
+    {
+        <h3>@fileName</h3>
+        <pre>@fileTextContents</pre>
+    }
+
+    @code {
+       
+        string fileName;
+        string fileTextContents;
+
+        private async Task ViewFile(InputFileChangeEventArgs e)
+        {
+            fileName = e.File.Name;
+            using (var streamReader = new StreamReader(e.File.OpenReadStream()))
+            {
+                fileTextContents = await streamReader.ReadToEndAsync();
+            }
+
+        }
+    }
