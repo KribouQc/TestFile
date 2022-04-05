@@ -1,5 +1,5 @@
-﻿@page "/"
-@page "/{nomModel}"
+﻿@page "/create"
+@page "/create/{nomModel}"
 
 
 @using testFichier.Model
@@ -85,7 +85,7 @@
         {
             //ouverture du fichier dans pour remplir le tableau
             //var nomModel = "model/nomModel
-            var fileModel = File.ReadAllText(Constantes.REPERTOIRE + nomModel + ".json");
+            var fileModel = System.IO.File.ReadAllText(Constantes.REPERTOIRE + nomModel + ".json");
             vmCreation.Model = JsonSerializer.Deserialize<LeModel>(fileModel);
 
 
@@ -133,7 +133,7 @@
 
         string fileName = Constantes.REPERTOIRE+vmCreation.Model.NomModel + ".json";
         string jsonString = JsonSerializer.Serialize(vmCreation.Model);
-        File.WriteAllText(fileName, jsonString);
+        System.IO.File.WriteAllText(fileName, jsonString);
     }
 
     private void OnSuppression(Guid id)

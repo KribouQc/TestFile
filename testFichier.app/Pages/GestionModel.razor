@@ -1,7 +1,8 @@
-﻿@page "/gestion"
+﻿
+@page "/gestion"
 
 @inject NavigationManager navigationManager 
-@using System.IO; 
+ 
 
 <h3>Gestion des modèles</h3>
 
@@ -42,7 +43,7 @@
 
     private void OnDelete(string nomFichier)
     {
-        File.Delete(nomFichier);
+        System.IO.File.Delete(nomFichier);
         listeFichier.Remove(nomFichier);
     }
 
@@ -52,7 +53,7 @@
         var nomModel = nomFichier.Split('/')[1].Split('.')[0];
 
         //navigation avec nomFichier en parametre vers la page creation
-        navigationManager.NavigateTo($"/{nomModel}");
+        navigationManager.NavigateTo($"/create/{nomModel}");
     }
 
 }
